@@ -1,6 +1,8 @@
 import Foundation
 import cursor_enter_helper
 
+nonisolated(unsafe) private var stopRequested: sig_atomic_t = 0
+
 @main
 enum CursorEnterHelperMain {
     static func main() throws {
@@ -11,10 +13,31 @@ enum CursorEnterHelperMain {
             exit(2)
         }
 
+        signal(SIGINT) { _ in stopRequested = 1 }
+        signal(SIGTERM) { _ in stopRequested = 1 }
+
         let appScanner = CursorRunningAppScanner()
         let axScanner = AXWindowScanner()
         let engine = TargetedEnterEngine()
         let foregroundEngine = ForegroundWindowEnterEngine()
+
+        func runLoop(_ body: () throws -> Void) rethrows {
+            let interval = Double(args.intervalMs) / 1_000.0
+
+            while stopRequested == 0 {
+                let start = Date()
+                try body()
+
+                if stopRequested != 0 {
+                    break
+                }
+
+                let remaining = interval - Date().timeIntervalSince(start)
+                if remaining > 0 {
+                    usleep(useconds_t(remaining * 1_000_000))
+                }
+            }
+        }
 
         switch args.mode {
         case .dryRun:
@@ -30,9 +53,8 @@ enum CursorEnterHelperMain {
         case .once:
             _ = try engine.sendEnter(windowTitle: args.windowTitle, requireAXTarget: false)
         case .loop:
-            while true {
+            try runLoop {
                 _ = try engine.sendEnter(windowTitle: args.windowTitle, requireAXTarget: false)
-                usleep(useconds_t(args.intervalMs * 1_000))
             }
         case .axDryRun:
             guard let match = appScanner.findCursorAgentsApp(
@@ -50,16 +72,14 @@ enum CursorEnterHelperMain {
         case .axOnce:
             _ = try engine.sendEnter(windowTitle: args.windowTitle, requireAXTarget: true)
         case .axLoop:
-            while true {
+            try runLoop {
                 _ = try engine.sendEnter(windowTitle: args.windowTitle, requireAXTarget: true)
-                usleep(useconds_t(args.intervalMs * 1_000))
             }
         case .activeOnce:
             _ = try foregroundEngine.sendEnter(windowTitle: args.windowTitle)
         case .activeLoop:
-            while true {
+            try runLoop {
                 _ = try foregroundEngine.sendEnter(windowTitle: args.windowTitle)
-                usleep(useconds_t(args.intervalMs * 1_000))
             }
         }
     }

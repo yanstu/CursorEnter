@@ -19,7 +19,7 @@ public struct Arguments: Equatable {
 
     public static func parse(_ raw: [String]) throws -> Arguments {
         var mode: RunMode = .dryRun
-        var windowTitle = "Cursor Agents"
+        var windowTitle = WindowTargetOptions.defaultTitle
         var intervalMs = EnterIntervalOptions.defaultValue
         var promptForAccessibility = false
 

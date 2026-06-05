@@ -18,7 +18,7 @@ public struct ForegroundWindowEnterEngine {
 
     @discardableResult
     public func sendEnter(windowTitle: String) throws -> Bool {
-        guard let match = appScanner.findCursorAgentsApp(
+        guard let target = appScanner.findCursorAgentsTarget(
             windowTitle: windowTitle,
             axScanner: axScanner
         ) else {
@@ -26,11 +26,11 @@ public struct ForegroundWindowEnterEngine {
         }
 
         let previousFrontmostApp = NSWorkspace.shared.frontmostApplication
-        guard let cursorApp = NSRunningApplication(processIdentifier: match.pid) else {
+        guard let cursorApp = NSRunningApplication(processIdentifier: target.app.pid) else {
             return false
         }
 
-        _ = axScanner.prepareTargetWindow(pid: match.pid, windowTitle: windowTitle)
+        _ = axScanner.prepareTargetWindow(pid: target.app.pid, window: target.window)
 
         let activated = cursorApp.activate(options: [.activateIgnoringOtherApps])
         if !activated {
@@ -38,9 +38,9 @@ public struct ForegroundWindowEnterEngine {
         }
 
         usleep(60_000)
-        _ = axScanner.prepareTargetWindow(pid: match.pid, windowTitle: windowTitle)
+        _ = axScanner.prepareTargetWindow(pid: target.app.pid, window: target.window)
         usleep(30_000)
-        try poster.postEnter(to: match.pid)
+        try poster.postEnter(to: target.app.pid)
         usleep(20_000)
 
         if let previousFrontmostApp,

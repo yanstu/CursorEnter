@@ -2,7 +2,7 @@
 set -euo pipefail
 
 APP_NAME="CursorEnter"
-BUNDLE_ID="cribug.cursor-enter.app"
+BUNDLE_ID="com.cribug.CursorEnter"
 MIN_SYSTEM_VERSION="13.0"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -12,8 +12,10 @@ APP_VERSION="$(tr -d '[:space:]' < "$ROOT_DIR/VERSION")"
 APP_BUNDLE="$ARTIFACT_DIR/$APP_NAME.app"
 APP_CONTENTS="$APP_BUNDLE/Contents"
 APP_MACOS="$APP_CONTENTS/MacOS"
+APP_RESOURCES="$APP_CONTENTS/Resources"
 APP_BINARY="$APP_MACOS/$APP_NAME"
 INFO_PLIST="$APP_CONTENTS/Info.plist"
+ICON_SRC="$ROOT_DIR/assets/AppIcon.icns"
 DMG_PATH="$ARTIFACT_DIR/$APP_NAME-$APP_VERSION.dmg"
 DMG_STAGE_DIR="$(mktemp -d "$ROOT_DIR/.tmp-package.XXXXXX")"
 
@@ -34,9 +36,13 @@ swift build -c release --product "$APP_NAME"
 BUILD_BINARY="$(swift build -c release --show-bin-path)/$APP_NAME"
 
 rm -rf "$APP_BUNDLE" "$DMG_PATH"
-mkdir -p "$APP_MACOS"
+mkdir -p "$APP_MACOS" "$APP_RESOURCES"
 cp "$BUILD_BINARY" "$APP_BINARY"
 chmod +x "$APP_BINARY"
+
+if [[ -f "$ICON_SRC" ]]; then
+  cp "$ICON_SRC" "$APP_RESOURCES/AppIcon.icns"
+fi
 
 cat >"$INFO_PLIST" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -45,6 +51,8 @@ cat >"$INFO_PLIST" <<PLIST
 <dict>
   <key>CFBundleExecutable</key>
   <string>$APP_NAME</string>
+  <key>CFBundleIconFile</key>
+  <string>AppIcon</string>
   <key>CFBundleIdentifier</key>
   <string>$BUNDLE_ID</string>
   <key>CFBundleName</key>
@@ -65,8 +73,8 @@ cat >"$INFO_PLIST" <<PLIST
 </plist>
 PLIST
 
-codesign --force --deep --sign - "$APP_BUNDLE"
-codesign --verify --deep --strict --verbose=2 "$APP_BUNDLE"
+codesign --force --sign - "$APP_BUNDLE"
+codesign --verify --strict --verbose=2 "$APP_BUNDLE"
 plutil -lint "$INFO_PLIST"
 
 cp -R "$APP_BUNDLE" "$DMG_STAGE_DIR/"

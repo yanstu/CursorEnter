@@ -13,7 +13,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
     private let frequencyMenu = NSMenu()
     private var frequencyItems: [Int: NSMenuItem] = [:]
-    private lazy var loopController = EnterLoopController(intervalMs: preferences.intervalMs)
+    private lazy var loopController = EnterLoopController(
+        windowTitle: preferences.windowTitle,
+        intervalMs: preferences.intervalMs
+    )
     private let hotKeyManager = GlobalHotKeyManager()
     private lazy var settingsWindowController = SettingsWindowController(
         preferences: preferences,
@@ -33,9 +36,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         settingsWindowController.onHotKeyChange = { [weak self] in
             self?.refreshMenu()
         }
+        settingsWindowController.onWindowTitleChange = { [weak self] in
+            guard let self else {
+                return
+            }
+
+            self.loopController.setWindowTitle(self.preferences.windowTitle)
+            self.refreshMenu()
+        }
 
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        statusItem?.button?.title = "CE Off"
+        statusItem?.button?.imagePosition = .imageOnly
         statusItem?.button?.target = self
         statusItem?.button?.action = #selector(handleStatusButtonClick)
         statusItem?.button?.sendAction(on: [.leftMouseUp, .rightMouseUp])
@@ -43,6 +54,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusRow.isEnabled = false
 
         frequencyRow.submenu = frequencyMenu
+        frequencyRow.image = Self.menuSymbol("timer")
         buildFrequencyMenu()
 
         toggleRow.target = self
@@ -50,9 +62,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         settingsRow.target = self
         settingsRow.action = #selector(openSettings)
+        settingsRow.image = Self.menuSymbol("gearshape")
 
         quitRow.target = self
         quitRow.action = #selector(quitApp)
+        quitRow.image = Self.menuSymbol("power")
 
         menu.addItem(statusRow)
         menu.addItem(frequencyRow)
@@ -129,15 +143,50 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func refreshMenu() {
-        statusItem?.button?.title = loopController.isRunning ? "CE On" : "CE Off"
+        let running = loopController.isRunning
+
+        if let button = statusItem?.button {
+            let statusImage = Self.statusImage(running: running)
+            button.image = statusImage
+            button.title = statusImage == nil ? (running ? "CE On" : "CE Off") : ""
+            button.contentTintColor = running ? .controlAccentColor : nil
+            button.toolTip = running ? "CursorEnter: On" : "CursorEnter: Off"
+        }
+
         statusRow.title = loopController.statusMessage
+        statusRow.image = Self.menuSymbol(running ? "checkmark.circle.fill" : "circle")
         frequencyRow.title = "Frequency (\(loopController.intervalMs)ms)"
-        toggleRow.title = loopController.isRunning
+        toggleRow.title = running
             ? "Stop Cursor Agents Enter"
             : "Start Cursor Agents Enter"
+        toggleRow.image = Self.menuSymbol(running ? "stop.fill" : "play.fill")
 
         for (interval, item) in frequencyItems {
             item.state = interval == loopController.intervalMs ? .on : .off
         }
+    }
+
+    private static func menuSymbol(_ name: String) -> NSImage? {
+        let image = NSImage(systemSymbolName: name, accessibilityDescription: nil)
+        image?.isTemplate = true
+        return image
+    }
+
+    private static func statusImage(running: Bool) -> NSImage? {
+        let candidates = running
+            ? ["return.circle.fill", "return", "arrow.turn.down.left"]
+            : ["return.circle", "return", "arrow.turn.down.left"]
+
+        for name in candidates {
+            if let image = NSImage(
+                systemSymbolName: name,
+                accessibilityDescription: running ? "CursorEnter On" : "CursorEnter Off"
+            ) {
+                image.isTemplate = true
+                return image
+            }
+        }
+
+        return nil
     }
 }

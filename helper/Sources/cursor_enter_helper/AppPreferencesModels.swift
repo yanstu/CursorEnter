@@ -10,6 +10,15 @@ public enum EnterIntervalOptions {
     }
 }
 
+public enum WindowTargetOptions {
+    public static let defaultTitle = "Cursor Agents"
+
+    public static func normalizedTitle(_ value: String) -> String {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? defaultTitle : trimmed
+    }
+}
+
 public struct ToggleHotKey: Codable, Equatable {
     public let keyCode: UInt32
     public let modifiers: UInt32

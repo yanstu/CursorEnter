@@ -5,9 +5,7 @@ public struct KeyPoster {
     public init() {}
 
     public func postEnter(to pid: pid_t) throws {
-        for plannedEvent in KeyEventPlan.modifierResetEvents +
-            KeyEventPlan.enterEvents +
-            KeyEventPlan.modifierResetEvents {
+        for plannedEvent in KeyEventPlan.enterEvents {
             try post(plannedEvent, to: pid)
         }
     }

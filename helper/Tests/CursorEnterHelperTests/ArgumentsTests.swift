@@ -55,4 +55,23 @@ final class ArgumentsTests: XCTestCase {
         XCTAssertEqual(args.windowTitle, "Cursor Agents")
         XCTAssertEqual(args.intervalMs, 250)
     }
+
+    func test_defaultsToCursorAgentsWindowTitle() throws {
+        let args = try Arguments.parse(["--mode", "loop"])
+
+        XCTAssertEqual(args.windowTitle, WindowTargetOptions.defaultTitle)
+    }
+
+    func test_parsesCustomWindowTitle() throws {
+        let args = try Arguments.parse([
+            "--mode", "loop",
+            "--window-title", "My Agents"
+        ])
+
+        XCTAssertEqual(args.windowTitle, "My Agents")
+    }
+
+    func test_rejectsUnknownArgument() {
+        XCTAssertThrowsError(try Arguments.parse(["--nope"]))
+    }
 }

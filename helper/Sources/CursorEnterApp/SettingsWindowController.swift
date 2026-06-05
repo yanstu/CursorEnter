@@ -3,11 +3,13 @@ import Foundation
 import cursor_enter_helper
 
 @MainActor
-final class SettingsWindowController: NSWindowController, NSWindowDelegate {
+final class SettingsWindowController: NSWindowController, NSWindowDelegate, NSTextFieldDelegate {
     var onHotKeyChange: (() -> Void)?
+    var onWindowTitleChange: (() -> Void)?
 
     private let preferences: AppPreferencesStore
     private let hotKeyManager: GlobalHotKeyManager
+    private let windowTitleField = NSTextField(string: "")
     private let shortcutButton = NSButton(title: "", target: nil, action: nil)
     private let hintLabel = NSTextField(labelWithString: "Click the box below, then press a shortcut with Command / Control / Option / Shift.")
     private let clearButton = NSButton(title: "Clear", target: nil, action: nil)
@@ -21,7 +23,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         self.hotKeyManager = hotKeyManager
 
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 460, height: 220),
+            contentRect: NSRect(x: 0, y: 0, width: 460, height: 320),
             styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false
@@ -57,6 +59,18 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
             return
         }
 
+        let windowTitleLabel = NSTextField(labelWithString: "Target Window Title")
+        windowTitleLabel.font = .boldSystemFont(ofSize: 13)
+
+        windowTitleField.placeholderString = WindowTargetOptions.defaultTitle
+        windowTitleField.delegate = self
+        windowTitleField.translatesAutoresizingMaskIntoConstraints = false
+
+        let windowTitleHint = NSTextField(labelWithString: "Only the Cursor window whose title matches exactly receives Enter.")
+        windowTitleHint.textColor = .secondaryLabelColor
+        windowTitleHint.font = .systemFont(ofSize: 11)
+        windowTitleHint.maximumNumberOfLines = 2
+
         let titleLabel = NSTextField(labelWithString: "Toggle Shortcut")
         titleLabel.font = .boldSystemFont(ofSize: 13)
 
@@ -83,7 +97,15 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         buttonStack.spacing = 12
         buttonStack.alignment = .leading
 
-        let stack = NSStackView(views: [titleLabel, shortcutButton, hintLabel, buttonStack])
+        let stack = NSStackView(views: [
+            windowTitleLabel,
+            windowTitleField,
+            windowTitleHint,
+            titleLabel,
+            shortcutButton,
+            hintLabel,
+            buttonStack
+        ])
         stack.orientation = .vertical
         stack.alignment = .leading
         stack.spacing = 12
@@ -95,6 +117,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
             stack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             stack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             stack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
+            windowTitleField.widthAnchor.constraint(equalTo: stack.widthAnchor),
             shortcutButton.widthAnchor.constraint(equalTo: stack.widthAnchor),
             shortcutButton.heightAnchor.constraint(equalToConstant: 84)
         ])
@@ -175,7 +198,24 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         onHotKeyChange?()
     }
 
+    func controlTextDidEndEditing(_ notification: Notification) {
+        guard (notification.object as? NSTextField) === windowTitleField else {
+            return
+        }
+
+        let normalized = WindowTargetOptions.normalizedTitle(windowTitleField.stringValue)
+        windowTitleField.stringValue = normalized
+
+        guard preferences.windowTitle != normalized else {
+            return
+        }
+
+        preferences.windowTitle = normalized
+        onWindowTitleChange?()
+    }
+
     private func refresh() {
+        windowTitleField.stringValue = preferences.windowTitle
         clearButton.isEnabled = preferences.toggleHotKey != nil
         refreshShortcutButton()
     }

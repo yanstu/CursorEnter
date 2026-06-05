@@ -4,7 +4,7 @@ import cursor_enter_helper
 @MainActor
 final class EnterLoopController {
     private let engine = TargetedEnterEngine()
-    private let windowTitle: String
+    private var windowTitle: String
     private var timer: Timer?
 
     var onStateChange: (() -> Void)?
@@ -13,11 +13,16 @@ final class EnterLoopController {
     private(set) var intervalMs: Int
 
     init(
-        windowTitle: String = "Cursor Agents",
+        windowTitle: String = WindowTargetOptions.defaultTitle,
         intervalMs: Int = EnterIntervalOptions.defaultValue
     ) {
-        self.windowTitle = windowTitle
+        self.windowTitle = WindowTargetOptions.normalizedTitle(windowTitle)
         self.intervalMs = max(EnterIntervalOptions.minimum, intervalMs)
+    }
+
+    func setWindowTitle(_ value: String) {
+        windowTitle = WindowTargetOptions.normalizedTitle(value)
+        publish()
     }
 
     func start() {
@@ -66,7 +71,7 @@ final class EnterLoopController {
 
             statusMessage = delivered
                 ? "Running (\(intervalMs)ms)"
-                : "Waiting for Cursor Agents (\(intervalMs)ms)"
+                : "Waiting for \(windowTitle) (\(intervalMs)ms)"
             publish()
         } catch {
             timer?.invalidate()

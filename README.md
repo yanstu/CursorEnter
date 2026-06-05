@@ -3,14 +3,12 @@
 `CursorEnter` 是一个仅支持 macOS 的工具集，主入口是原生菜单栏 App。  
 它会持续只对 Cursor 的 `Cursor Agents` 窗口发送 `Enter`，并尽量不抢占其他前台应用。
 
-![CursorEnter menu preview](docs/assets/menu-preview.png)
-
 ## 功能
 
-- 菜单栏开关
+- 菜单栏图标显示开 / 关状态
 - 左键直接启动 / 停止
-- 右键打开菜单
-- 仅针对 `Cursor Agents` 窗口发送 `Enter`
+- 右键打开菜单（各菜单项带图标）
+- 仅针对目标标题窗口发送 `Enter`（默认 `Cursor Agents`，可在设置中修改）
 - 频率可调：`40 / 80 / 120 / 180 / 250 / 300 ms`
 - 支持录制全局快捷键来切换开关
 - 可打包为可双击安装的 `.app` / `.dmg`
@@ -88,6 +86,14 @@
 - `Option`
 - `Shift`
 
+## 设置目标窗口标题
+
+右键菜单栏图标后：
+
+1. 打开 `Settings...`
+2. 在 `Target Window Title` 输入框填写目标窗口标题
+3. 失焦或回车后自动保存（留空会回退为默认的 `Cursor Agents`）
+
 ## 验证窗口定位
 
 ```bash
@@ -113,8 +119,7 @@ swift test
 ## 项目结构
 
 - `helper/`：Swift 菜单栏 App、helper、测试
-- `script/`：运行和打包原生 App 的脚本
-- `docs/assets/`：README 截图等文档资源
+- `script/`：运行、测试和打包原生 App 的脚本
 
 ## 当前限制
 

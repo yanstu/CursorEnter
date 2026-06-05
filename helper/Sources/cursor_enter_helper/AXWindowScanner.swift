@@ -36,7 +36,17 @@ public enum AXWindowMatcher {
 }
 
 public struct AXWindowScanner {
-    public init() {}
+    private static let messagingTimeoutSeconds: Float = 0.5
+
+    private static let globalTimeoutConfigured: Bool = {
+        let systemWide = AXUIElementCreateSystemWide()
+        AXUIElementSetMessagingTimeout(systemWide, messagingTimeoutSeconds)
+        return true
+    }()
+
+    public init() {
+        _ = AXWindowScanner.globalTimeoutConfigured
+    }
 
     public func debugRows(for pid: pid_t) -> [AXWindowRow] {
         rows(for: AXUIElementCreateApplication(pid))
@@ -50,12 +60,12 @@ public struct AXWindowScanner {
     }
 
     @discardableResult
-    public func prepareTargetWindow(pid: pid_t, windowTitle: String) -> Bool {
-        let application = AXUIElementCreateApplication(pid)
-        guard let match = findWindow(in: pid, windowTitle: windowTitle),
-        let element = match.element else {
+    public func prepareTargetWindow(pid: pid_t, window: AXWindowRow) -> Bool {
+        guard let element = window.element else {
             return false
         }
+
+        let application = AXUIElementCreateApplication(pid)
 
         if isApplicationPointingToTarget(application: application, window: element) {
             return true

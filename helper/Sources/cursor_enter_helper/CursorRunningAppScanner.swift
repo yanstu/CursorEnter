@@ -32,9 +32,20 @@ public struct CursorRunningAppScanner {
         windowTitle: String,
         axScanner: AXWindowScanner = AXWindowScanner()
     ) -> RunningAppRow? {
-        findCursorApps().first { row in
-            axScanner.findWindow(in: row.pid, windowTitle: windowTitle) != nil
+        findCursorAgentsTarget(windowTitle: windowTitle, axScanner: axScanner)?.app
+    }
+
+    public func findCursorAgentsTarget(
+        windowTitle: String,
+        axScanner: AXWindowScanner = AXWindowScanner()
+    ) -> (app: RunningAppRow, window: AXWindowRow)? {
+        for row in findCursorApps() {
+            if let window = axScanner.findWindow(in: row.pid, windowTitle: windowTitle) {
+                return (row, window)
+            }
         }
+
+        return nil
     }
 
     private func currentRows() -> [RunningAppRow] {

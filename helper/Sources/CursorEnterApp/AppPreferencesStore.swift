@@ -5,6 +5,7 @@ final class AppPreferencesStore {
     private enum Keys {
         static let intervalMs = "intervalMs"
         static let toggleHotKey = "toggleHotKey"
+        static let windowTitle = "windowTitle"
     }
 
     private let defaults: UserDefaults
@@ -20,6 +21,15 @@ final class AppPreferencesStore {
         }
         set {
             defaults.set(EnterIntervalOptions.normalized(newValue), forKey: Keys.intervalMs)
+        }
+    }
+
+    var windowTitle: String {
+        get {
+            WindowTargetOptions.normalizedTitle(defaults.string(forKey: Keys.windowTitle) ?? "")
+        }
+        set {
+            defaults.set(WindowTargetOptions.normalizedTitle(newValue), forKey: Keys.windowTitle)
         }
     }
 

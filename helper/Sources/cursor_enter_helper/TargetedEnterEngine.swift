@@ -20,7 +20,7 @@ public struct TargetedEnterEngine {
         windowTitle: String,
         requireAXTarget: Bool
     ) throws -> Bool {
-        guard let match = appScanner.findCursorAgentsApp(
+        guard let target = appScanner.findCursorAgentsTarget(
             windowTitle: windowTitle,
             axScanner: axScanner
         ) else {
@@ -28,11 +28,11 @@ public struct TargetedEnterEngine {
         }
 
         if requireAXTarget,
-           !axScanner.prepareTargetWindow(pid: match.pid, windowTitle: windowTitle) {
+           !axScanner.prepareTargetWindow(pid: target.app.pid, window: target.window) {
             return false
         }
 
-        try poster.postEnter(to: match.pid)
+        try poster.postEnter(to: target.app.pid)
         return true
     }
 }
