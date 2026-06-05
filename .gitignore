@@ -7,4 +7,3 @@ dist/
 artifacts/
 bin/
 helper/.build/
-cursor-enter-*.vsix
