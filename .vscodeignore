@@ -1,0 +1,7 @@
+src/**
+helper/**
+docs/**
+tsconfig.json
+esbuild.mjs
+*.tsbuildinfo
+node_modules/**

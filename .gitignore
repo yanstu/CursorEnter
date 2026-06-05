@@ -1,0 +1,10 @@
+.DS_Store
+.codex/
+.vscode/
+docs/superpowers/
+node_modules/
+dist/
+artifacts/
+bin/
+helper/.build/
+cursor-enter-*.vsix

@@ -1,0 +1,38 @@
+import Foundation
+
+public struct TargetedEnterEngine {
+    private let appScanner: CursorRunningAppScanner
+    private let axScanner: AXWindowScanner
+    private let poster: KeyPoster
+
+    public init(
+        appScanner: CursorRunningAppScanner = CursorRunningAppScanner(),
+        axScanner: AXWindowScanner = AXWindowScanner(),
+        poster: KeyPoster = KeyPoster()
+    ) {
+        self.appScanner = appScanner
+        self.axScanner = axScanner
+        self.poster = poster
+    }
+
+    @discardableResult
+    public func sendEnter(
+        windowTitle: String,
+        requireAXTarget: Bool
+    ) throws -> Bool {
+        guard let match = appScanner.findCursorAgentsApp(
+            windowTitle: windowTitle,
+            axScanner: axScanner
+        ) else {
+            return false
+        }
+
+        if requireAXTarget,
+           !axScanner.prepareTargetWindow(pid: match.pid, windowTitle: windowTitle) {
+            return false
+        }
+
+        try poster.postEnter(to: match.pid)
+        return true
+    }
+}

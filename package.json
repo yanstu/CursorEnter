@@ -1,0 +1,71 @@
+{
+  "name": "cursor-enter",
+  "displayName": "Cursor Enter",
+  "description": "macOS tools for repeatedly sending Enter to the Cursor Agents window.",
+  "publisher": "cribug",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:cursorEnter.toggle",
+    "onCommand:cursorEnter.enable",
+    "onCommand:cursorEnter.disable"
+  ],
+  "main": "./dist/extension.js",
+  "extensionKind": [
+    "ui"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "cursorEnter.toggle",
+        "title": "Cursor Enter: Toggle"
+      },
+      {
+        "command": "cursorEnter.enable",
+        "title": "Cursor Enter: Enable"
+      },
+      {
+        "command": "cursorEnter.disable",
+        "title": "Cursor Enter: Disable"
+      }
+    ],
+    "configuration": {
+      "title": "Cursor Enter",
+      "properties": {
+        "cursorEnter.intervalMs": {
+          "type": "number",
+          "default": 120,
+          "minimum": 40
+        },
+        "cursorEnter.windowTitle": {
+          "type": "string",
+          "default": "Cursor Agents"
+        },
+        "cursorEnter.enabled": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "build:helper": "bash scripts/build-helper.sh",
+    "package": "npm run build:helper && npm run build && npx @vscode/vsce package",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^3.6.0",
+    "@types/node": "^24.0.0",
+    "@types/vscode": "^1.100.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
+  }
+}
