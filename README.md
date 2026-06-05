@@ -5,6 +5,8 @@
 
 仓库中仍保留了早期的 VSIX 实验代码，但当前主方案是 `helper/` 下的 Swift 菜单栏 App。
 
+![CursorEnter menu preview](docs/assets/menu-preview.png)
+
 ## 功能
 
 - 菜单栏开关
@@ -23,6 +25,23 @@
 - Cursor 中存在标题为 `Cursor Agents` 的窗口
 
 ## 快速开始
+
+### 从 GitHub Release 安装
+
+1. 打开本仓库的 Release 页面
+2. 下载 `CursorEnter-<version>.dmg`
+3. 双击打开 `.dmg`
+4. 将 `CursorEnter.app` 拖到 `Applications`
+5. 从 `Applications` 启动 `CursorEnter`
+6. 首次运行后，在“系统设置 -> 隐私与安全性 -> 辅助功能”中允许 `CursorEnter`
+
+如果第一次启动被 Gatekeeper 拦截：
+
+1. 打开“系统设置 -> 隐私与安全性”
+2. 找到被阻止的 `CursorEnter.app`
+3. 手动选择“仍要打开”或允许它运行
+
+当前 Release 安装包是本地 `ad-hoc` 签名版本，还没有做 Developer ID 签名和 notarization。
 
 ### 本地运行菜单栏 App
 
@@ -46,6 +65,14 @@
 
 - `artifacts/CursorEnter.app`
 - `artifacts/CursorEnter-<version>.dmg`
+
+### 使用方式
+
+- 左键菜单栏图标：直接切换开始 / 停止
+- 右键菜单栏图标：打开菜单
+- `Frequency`：选择回车频率
+- `Settings...`：录制全局快捷键
+- `Quit`：退出应用
 
 ## 设置快捷键
 
