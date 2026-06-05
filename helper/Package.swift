@@ -22,12 +22,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "CAXShim",
-            publicHeadersPath: "include"
-        ),
-        .target(
-            name: "cursor_enter_helper",
-            dependencies: ["CAXShim"]
+            name: "cursor_enter_helper"
         ),
         .executableTarget(
             name: "cursor-enter-helper-bin",

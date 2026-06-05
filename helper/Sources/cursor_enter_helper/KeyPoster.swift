@@ -1,22 +1,27 @@
-@preconcurrency import ApplicationServices
 @preconcurrency import CoreGraphics
-import CAXShim
+import Foundation
 
 public struct KeyPoster {
     public init() {}
 
     public func postEnter(to pid: pid_t) throws {
-        let axResult = cax_post_enter_to_pid(pid)
-        if axResult == .success {
-            return
+        for plannedEvent in KeyEventPlan.modifierResetEvents +
+            KeyEventPlan.enterEvents +
+            KeyEventPlan.modifierResetEvents {
+            try post(plannedEvent, to: pid)
         }
+    }
 
-        guard let down = CGEvent(keyboardEventSource: nil, virtualKey: 36, keyDown: true),
-              let up = CGEvent(keyboardEventSource: nil, virtualKey: 36, keyDown: false) else {
+    private func post(_ plannedEvent: PlannedKeyEvent, to pid: pid_t) throws {
+        guard let event = CGEvent(
+            keyboardEventSource: nil,
+            virtualKey: plannedEvent.virtualKey,
+            keyDown: plannedEvent.keyDown
+        ) else {
             throw HelperError("failed to create keyboard event")
         }
 
-        down.postToPid(pid)
-        up.postToPid(pid)
+        event.flags = plannedEvent.flags
+        event.postToPid(pid)
     }
 }

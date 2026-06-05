@@ -8,7 +8,7 @@ MIN_SYSTEM_VERSION="13.0"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 HELPER_DIR="$ROOT_DIR/helper"
 ARTIFACT_DIR="$ROOT_DIR/artifacts"
-APP_VERSION="$(node -e "console.log(require(process.argv[1]).version)" "$ROOT_DIR/package.json")"
+APP_VERSION="$(tr -d '[:space:]' < "$ROOT_DIR/VERSION")"
 APP_BUNDLE="$ARTIFACT_DIR/$APP_NAME.app"
 APP_CONTENTS="$APP_BUNDLE/Contents"
 APP_MACOS="$APP_CONTENTS/MacOS"
@@ -23,6 +23,11 @@ cleanup() {
 trap cleanup EXIT
 
 mkdir -p "$ARTIFACT_DIR"
+
+if [[ -z "$APP_VERSION" ]]; then
+  echo "VERSION file is empty" >&2
+  exit 1
+fi
 
 cd "$HELPER_DIR"
 swift build -c release --product "$APP_NAME"

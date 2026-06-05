@@ -3,8 +3,6 @@
 `CursorEnter` 是一个仅支持 macOS 的工具集，主入口是原生菜单栏 App。  
 它会持续只对 Cursor 的 `Cursor Agents` 窗口发送 `Enter`，并尽量不抢占其他前台应用。
 
-仓库中仍保留了早期的 VSIX 实验代码，但当前主方案是 `helper/` 下的 Swift 菜单栏 App。
-
 ![CursorEnter menu preview](docs/assets/menu-preview.png)
 
 ## 功能
@@ -105,13 +103,6 @@ Cursor Agents    AXWindow    AXStandardWindow
 
 ## 开发
 
-安装 Node 依赖并运行 JS 测试：
-
-```bash
-npm install
-npm test
-```
-
 运行 Swift 测试：
 
 ```bash
@@ -123,19 +114,9 @@ swift test
 
 - `helper/`：Swift 菜单栏 App、helper、测试
 - `script/`：运行和打包原生 App 的脚本
-- `src/`：早期 VSIX 实验代码
-- `scripts/`：VSIX 实验相关构建脚本
+- `docs/assets/`：README 截图等文档资源
 
 ## 当前限制
 
 - 当前打包产物是本地 `ad-hoc` 签名，不是 Developer ID 签名
 - 还没有做 notarization
-- 当前仓库中的 VSIX 代码不是主入口，只作为实验保留
-
-## 旧 VSIX 实验
-
-如仍需构建 VSIX：
-
-```bash
-bash scripts/package-extension.sh
-```
